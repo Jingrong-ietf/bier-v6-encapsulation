@@ -1,0 +1,521 @@
+<?xml version="1.0" encoding="US-ASCII"?>
+<!DOCTYPE rfc SYSTEM "rfc2629.dtd">
+<?rfc toc="yes"?>
+<?rfc tocompact="yes"?>
+<?rfc tocdepth="3"?>
+<?rfc tocindent="yes"?>
+<?rfc symrefs="yes"?>
+<?rfc sortrefs="yes"?>
+<?rfc comments="yes"?>
+<?rfc inline="yes"?>
+<?rfc compact="yes"?>
+<?rfc subcompact="no"?>
+<rfc category="std" docName="draft-xie-bier-ipv6-mvpn-02" ipr="trust200902">
+  <front>
+    <title abbrev="BIERv6 MVPN">Use of BIER IPv6 Encapsulation (BIERv6) for
+    Multicast VPN in IPv6 networks</title>
+
+    <author fullname="Jingrong Xie" initials="J." surname="Xie">
+      <organization>Huawei Technologies</organization>
+
+      <address>
+        <postal>
+          <street/>
+
+          <city/>
+
+          <code/>
+
+          <country/>
+        </postal>
+
+        <email>xiejingrong@huawei.com</email>
+      </address>
+    </author>
+
+    <author fullname="Mike McBride" initials="M." surname="McBride">
+      <organization>Futurewei</organization>
+
+      <address>
+        <postal>
+          <street/>
+
+          <city/>
+
+          <code/>
+
+          <country/>
+        </postal>
+
+        <email>mmcbride7@gmail.com</email>
+      </address>
+    </author>
+
+    <author fullname="Senthil Dhanaraj" initials="S." surname="Dhanaraj">
+      <organization>Huawei Technologies</organization>
+
+      <address>
+        <postal>
+          <street/>
+
+          <city/>
+
+          <code/>
+
+          <country/>
+        </postal>
+
+        <email>senthil.dhanaraj@huawei.com</email>
+      </address>
+    </author>
+
+    <author fullname="Liang Geng" initials="L." surname="Geng">
+      <organization>China Mobile</organization>
+
+      <address>
+        <postal>
+          <street/>
+
+          <city/>
+
+          <code/>
+
+          <country/>
+        </postal>
+
+        <email>gengliang@chinamobile.com</email>
+      </address>
+    </author>
+
+    <date day="14" month="January" year="2020"/>
+
+    <abstract>
+      <t>This draft defines the procedures and messages for using Bit Index
+      Explicit Replication (BIER) for Multicast VPN Services in IPv6 networks
+      using the BIER IPv6 encapsulation. It provides a migration path for
+      Multicast VPN service using BIER MPLS encapsulation in MPLS networks to
+      multicast VPN service using BIER IPv6 encapsulation (BIERv6) in IPv6
+      networks.</t>
+    </abstract>
+
+    <note title="Requirements Language">
+      <t>The key words "MUST", "MUST NOT", "REQUIRED", "SHALL", "SHALL NOT",
+      "SHOULD", "SHOULD NOT", "RECOMMENDED", "MAY", and "OPTIONAL" in this
+      document are to be interpreted as described in <xref target="RFC2119"/>
+      and <xref target="RFC8174"/>.</t>
+    </note>
+  </front>
+
+  <middle>
+    <section title="Introduction">
+      <t>Bit Index Explicit Replication (BIER) <xref target="RFC8279"/> is an
+      architecture that provides optimal multicast forwarding without
+      requiring intermediate routers to maintain any per-flow state by using a
+      multicast-specific BIER header. BIERv6 refers to the deployment of BIER
+      in IPv6 networks using the BIER IPv6 encapsulation format defined in
+      <xref target="I-D.xie-bier-ipv6-encapsulation"/>.</t>
+
+      <t>This document describes a method to realize MVPN services using BIER
+      as a P-tunnel in the IPv6 Networks (BIERv6 Networks). It defines a
+      method to use an IPv6 address, called Src.DTx in this document, as
+      source address of an IPv6 header, to identify the MVPN instance at the
+      Egress PE. The Src.DTx address used as source address of a BIERv6 packet
+      represent both the context and the upstream-assigned VPN Label
+      in MVPN scenario defined in <xref target="RFC8556"/>.</t>
+
+      <t>The Src.DTx address can be a normal IPv6 address of the BFR, for 
+      example, a loopback address of the BFR. The Src.DTx address can also be an
+      IPv6 address allocated from an IPv6 address block, for example, an IPv6
+      address allocated from an SRv6 locator if BIERv6 MVPN is deployed in an
+      SRv6 network.</t>
+
+      <t>In particular, MVPN deployment in IPv6 networks relies on L3VPN
+      deployment on IPv6 networks firstly, thus the c-multicast routing
+      procedure like UMH Selection can be done. As an example, the L3VPN 
+      deployment in SRv6 networks can be referred to <xref
+      target="I-D.ietf-bess-srv6-services"/>.</t>
+
+      <t>GTM defined in [RFC7716] is also covered in this document, as GTM
+      shares the same BGP-MVPN signaling, while providing an approach of
+      Non-VPN multicast over a service provider core with various P-tunnel
+      type. For the same reason of UMH selection as a base of GTM, the Global
+      IPv4/IPv6 over SRv6 networks can be referred to <xref
+      target="I-D.ietf-bess-srv6-services"/>.</t>
+
+      <t/>
+    </section>
+
+    <section title="Terminology">
+      <t>Readers of this document are assumed to be familiar with the
+      terminology and concepts of the documents listed as Normative
+      References. Additionally the following terms are used through out the
+      document.</t>
+
+      <t><list style="symbols">
+          <t>BIERv6 - BIER in IPv6 networks using the BIERv6 encapsulation
+          format defined in <xref
+          target="I-D.xie-bier-ipv6-encapsulation"/>.</t>
+
+          <t>SRv6 - Segment Routing instantiated on the IPv6 dataplane as
+          defined in <xref
+          target="I-D.ietf-spring-srv6-network-programming"/>.</t>
+
+          <t>SRv6 SID - SRv6 Segment Identifier as defined in <xref
+          target="I-D.ietf-spring-srv6-network-programming"/>.</t>
+
+          <t>End.DTx - Refers to the functions End.DT6, End.DT4, End.DT46
+          defined in <xref
+          target="I-D.ietf-spring-srv6-network-programming"/>.</t>
+
+          <t>Src.DTx - Refers to the functions Src.DT4, Src.DT6, Src.DT46
+          defind in this document.</t>
+
+          <t>SRv6 L3 Service - L3VPN/Global-L3 service in SRv6 networks
+          defined in <xref target="I-D.ietf-bess-srv6-services"/>, or
+          MVPN/GTM service in BIERv6 networks defined in this document.</t>
+        </list></t>
+    </section>
+
+    <section title="Use of PTA and Prefix-SID Attribute in x-PMSI A-D Routes">
+      <t>The BGP-MVPN I-PMSI A-D (Type 1) or S-PMSI A-D (Type 3) route (called
+      x-PMSI A-D route in this document), advertised by Ingress PE carries the
+      BIER (Type 11) PTA as specified in <xref target="RFC8556"/>. The BIER
+      PTA carried in the x-PMSI A-D route is used for explicitly tracking the
+      receiver-site PEs which are interested in a specific multicast flow. It
+      includes three BIER-specific fields, Sub-domain-id, BFR-id, and
+      BFR-prefix. For BIER P-tunnel using the BIERv6 encapsulation in IPv6
+      networks, the BFR-prefix field in the PTA MUST be set to the BFIR IPv6
+      prefix and the MPLS Label field in the PTA MUST set to 0. For MVPN over
+      BIERv6, the Src.DTx IPv6 address of the BFIR is used to identify the VRF
+      instead of an MPLS Label. The Src.DTx IPv6 Address (Src.DT6 or Src.DT4
+      or Src.DT46) MUST be carried within an SRv6 L3 Service TLV <xref
+      target="I-D.ietf-bess-srv6-services"/> of BGP Prefix-SID attribute in
+      the x-PMSI A-D route.</t>
+
+      <t>The Ingress PE encapsulates the c-multicast IP packet with BIERv6
+      header and the source address in the outer IPv6 header will be set to
+      the Src.DTx IPv6 address advertised in the BGP-MVPN x-PMSI A-D routes.
+      See section 3 of <xref target="I-D.xie-bier-ipv6-encapsulation"/> for
+      the detailed packet format.</t>
+
+      <t>Egress PE (BFER) receiving the x-PMSI A-D routes with BIER PTA and
+      SRv6 L3 Service TLV learns the Src.DTx IPv6 address and uses it to
+      identify the VRF of the c-multicast packet.</t>
+
+      <t>When Egress PE receives a BIERv6 packet and the self bfr-id is set in
+      the bit-string field of the BIERv6 header, it retrieves the Src.DTx IPv6
+      address from the source address of the IPv6 header to determine the VRF
+      and the Address Family (AF) of the c-multicast data packet, and performs
+      the MFIB lookup in the corresponding table.</t>
+    </section>
+
+    <section title="MVPN over BIERv6 Core">
+      <t/>
+
+      <t><xref target="RFC8556"/> specifies the protocol and procedures to be
+      followed by the Ingress and Egress PEs to use BIER as a P-tunnel for
+      MVPN in MPLS networks. This section specifies the required changes and
+      procedures in addition to support BIER as a P-tunnel in IPv6 networks
+      using BIERv6.</t>
+
+      <t>In a IPv6 service provider network, many of the IP address fields
+      used in the BGP-MVPN routes are IPv6 address as specified in <xref
+      target="RFC6515"/>. These are listed below.</t>
+
+      <t><list style="symbols">
+          <t>"Originating Router's IP Address" in the NLRI of Type 1 or Type 3
+          BGP-MVPN route is an IPv6 address.</t>
+
+          <t>"Network Address of Next Hop" field in the MP_REACH_NLRI
+          attribute is an IPv6 address.</t>
+
+          <t>Route Targets Extended Community (EC) used in C-multicast join
+          (Type 6 or 7) route or Leaf A-D (Type 5) route is an IPv6 Address
+          Specific Extended Community, where the Global Administrator field
+          will be an IPv6 address identifies the Upstream PE or the UMH.</t>
+
+          <t>"VRF Route Import Extended Community (EC)" carried by unicast
+          VPN-IPv4 or VPN-IPv6 routes as [RFC6515] specifies, or SAFI 1, 2, or
+          4 unicast routes, or MVPN (SAFI 5) Source-Active routes as [RFC7716]
+          specifies.</t>
+        </list></t>
+
+      <t/>
+
+      <t>On the Ingress PE (BFIR), the BGP-MVPN x-PMSI A-D route is
+      constructed as per the procedures specified in <xref target="RFC8556"/>
+      and with the following specifications.</t>
+
+      <t><list style="symbols">
+          <t>MPLS Label field in the BIER PTA MUST be set to Zero.</t>
+
+          <t>BFR-prefix field in the BIER PTA MUST be set to the Ingress PEs
+          (BFIR) IPv6 BFR-Prefix Address. It does not need to be the same as
+          the other IPv6 address of the x-PMSI AD route.</t>
+
+          <t>Route MUST also carry an BGP Prefix SID attribute with an SRv6 L3
+          Service TLV carrying an Src.DTx IPv6 address uniquely identifying
+          the MVPN instance.</t>
+        </list></t>
+
+      <t>If the MVPN is IPv4 MVPN, the Src.DTx can be either Src.DT4 or
+      Src.DT46. If the MVPN is IPv6 MVPN, the Src.DTx can be either Src.DT6 or
+      Src.DT46. The distribution of the x-PMSI A-D routes uses the Src.DTx
+      according to the local configuration, and is independent to the use of
+      End.DTx in VPN-IP unicast routes of this VPN. For example, one can use
+      End.DT46 for VPNv4 and VPNv6 unicast routes, but use Src.DT4 for the
+      MVPN routes for the same VPN. Another example, one can use End.DX for
+      VPNv4 unicast routes, but use Src.DT46 for the MVPN routes for the same
+      VPN.</t>
+
+      <t>BFIR MAY carry the BGP Prefix-SID attribute only in I-PMSI A-D route
+      when I-PMSI A-D route is used, while other S-PMSI A-D routes do not
+      carry the BGP Prefix-SID attribute.</t>
+
+      <t>BFIR MAY carry the BGP Prefix-SID attribute only in wildcard S-PMSI
+      A-D routes when the "S-PMSI Only" mode as described in <xref
+      target="RFC6625"/> is used, while other S-PMSI A-D routes do not carry
+      the BGP Prefix-SID attribute.</t>
+
+      <t>On the Egress PE (BFER), the BGP-MVPN x-PMSI A-D route is processed
+      as per the procedures specified in <xref target="RFC8556"/> and with the
+      following specifications:</t>
+
+      <t><list style="symbols">
+          <t>The MPLS Label field in the BIER PTA of the BGP-MVPN x-PMSI A-D
+          route MUST be ignored and MUST not be used for the identification of
+          the VRF.</t>
+
+          <t>The BGP-MVPN x-PMSI A-D route MUST be dropped if the BFR-prefix
+          field in the BIER PTA is not an IPv6 address.</t>
+
+          <t>The BGP-MVPN x-PMSI A-D route MUST be dropped if it does not
+          carry a Src.DTx IPv6 address in the SRv6 L3 Service TLV in BGP
+          Prefix SID attribute.</t>
+
+          <t>Leaf A-D route originated by the Egress PE (BFER) MUST carry the
+          BIER PTA with the BFR-prefix field set to the BFER IPv6
+          BFR-prefix.</t>
+        </list>Valid BGP-MVPN x-PMSI A-D route received by an Egress PE (BFER)
+      is stored locally, and the Src.DTx IPv6 Address carried in the SRv6 L3
+      service TLV is used to identify the VRF of a c-multicast data packet.
+      This may be populated into forwarding table only when there is
+      c-multicast flow state with UMH of the specific BFIR this Src.DTx
+      located in.</t>
+
+      <t>If more than one x-PMSI A-D routes belonging to the same VRF has
+      different Src.DTx value, the processing is determined by the local
+      policy of the BFER.</t>
+
+      <t>If more than one x-PMSI A-D routes belonging to different VRF has the
+      same Src.DTx value, the BFER must log an error, and a BIERv6 packet with
+      this Src.DTx as the IPv6 source address MUST be dropped.</t>
+
+      <t>The BGP Prefix-SID attribute (which may include the Src.DTx in SRv6
+      L3 Service TLV) MUST NOT be carried in Leaf A-D route upon sending, and
+      MUST be ignored upon reception.</t>
+
+      <t/>
+    </section>
+
+    <section title="GTM over BIERv6 Core">
+      <t/>
+
+      <t>As specified in [RFC7716], Global Table Multicast (GTM) uses the same
+      Subsequent Address Family Identifier (SAFI) value, the same Network
+      Layer Reachability Information (NLRI) format, and the same procedures of
+      MVPN with only a few adaptions. It support for both IPv4 and IPv6
+      multicast flows over either an IPv4 or IPv6 SP infrastructure. GTM over
+      BIERv6 core is obviously a case of IPv4/IPv6 multicast over an IPv6 SP
+      infrastructure with BIERv6 data-plane.</t>
+
+      <t>The BIER (Type 11) PTA attribute and the BGP Prefix-SID attribute are
+      carried in the x-PMSI A-D route in GTM cases. When the a BGP-MVPN x-PMSI
+      A-D route is received by Egress PE, it is stored locally, and the
+      Src.DTx IPv6 Address of the Ingress PE in the route is used to determine
+      the VRF of a packet, which is the 'public' VRF in the case of GTM.</t>
+
+      <t>There are some other attributes listed below for GTM over a BIERv6
+      core:</t>
+
+      <t><list style="symbols">
+          <t>Route Distinguishers - the RD field of a BGP-MVPN route's NLRI
+          MUST be set to zero (i.e., to 64 bits of zero) to represent a
+          Non-VPN GTM. See section 2.2 of [RFC7716].</t>
+
+          <t>Route Targets Extended Community (EC) - The RT EC carried by the
+          BGP-MVPN C-multicast (Type 6 or 7) route or Leaf A-D (Type 4) route
+          MUST be an IPv6-address-specific Extended Community (EC). The Global
+          Administrator field identifies the Upstream PE or the UMH, and the
+          Local Administrator field MUST always be set to zero in GTM
+          case.</t>
+
+          <t>VRF Route Import Extended Community (EC) - The VRF Route Import
+          EC used in BIERv6 core MUST be an IPv6-address-specific EC if used,
+          either used in UMH-eligible unicast routes having a SAFI of 1, 2, or
+          4, or used in the MVPN (SAFI of 5) Source Active A-D route.</t>
+        </list></t>
+
+      <t>GTM IPv4 multicast over an BIERv6 core may be considered an
+      alternative to support IPv4 IPTV content delivery during transition to
+      IPv6 period comparing to [RFC8114]. They both use IPv4-in-IPv6
+      encapsulation, while BIERv6 uses an additional BIER header within an
+      IPv6 Extension header to support stateless core.</t>
+
+      <t/>
+    </section>
+
+    <section title="Data Plane">
+      <t/>
+
+      <section title="Encapsulation of Multicast Traffic">
+        <t>BIER IPv6 encapsulation (BIERv6) <xref
+        target="I-D.xie-bier-ipv6-encapsulation"/> is used for forwarding the
+        c-multicast traffic through an IPv6 core. The following diagram shows
+        the progression of an MVPN c-multicast packet as it enters and leaves
+        the intra-AS service-provider network.</t>
+
+        <t><figure align="left" anchor="BIERv6-MVPN-GTM-Intra-AS"
+            title="BIERv6 MVPN/GTM Intra-AS">
+            <artwork><![CDATA[
+                 +---------------+    +---------------+
+                 | P-IPv6 Header |    | P-IPv6 Header |
+                 | (SA=Src.DTx   |    | (SA=Src.DTx   |
+                 |  DA=End.BIER) |    |  DA=End.BIER) |
+                 +---------------+    +---------------+
+                 | P-IPv6 ExtHdr |    | P-IPv6 ExtHdr |
+                 | (BIER header) |    | (BIER header) |
+++=========++    ++=============++    ++=============++    ++=========++
+||C-IP Hdr ||    ||  C-IP Hdr   ||    ||  C-IP Hdr   ||    ||C-IP Hdr ||
+++=========++ >> ++=============++ >> ++=============++ >> ++=========++
+||C-Payload||    ||  C-Payload  ||    ||  C-Payload  ||    ||C-Payload||
+++=========++    ++=============++    ++=============++    ++=========++
+CE1-----------PE1------------------P2------------------PE2-----------CE2
+      ]]></artwork>
+          </figure></t>
+
+        <t>In case of inter-AS scenario, BIERv6 packets may travel through
+        unicast to a Boarder Router (BR), and then replicate in a single
+        intra-AS BIERv6 domain. How such non-segmented BIERv6 scenario can be
+        supported is outside the scope of this document.</t>
+
+        <t>How segmented MVPN, for example, between BIERv6 and BIERv6, or
+        between BIERv6 and Ingress Replication(IR) in Non-MPLS IPv6 networks,
+        is outside the scope of this document.</t>
+
+        <t>The Src.DTx SHOULD support as destination address of an ICMPv6
+        packet. If a loopback address of the BFR is used as Src.DTx address, 
+        this is supported. If an address from an SRv6 locator is used as 
+        Src.DTx address, the following pseudo-code describes how a packet
+        with Src.DTx as destination address is handled: </t>
+
+        <t><figure>
+            <artwork align="left"><![CDATA[
+    1. IF Last_NH = ICMPv6   ;;Ref1
+    2.   Send to CPU.
+    3. ELSE
+    4.   Drop the packet.
+ ]]></artwork>
+          </figure></t>
+
+        <t>Ref1: ICMPv6 packet using Src.DT4, Src.DT6 or Src.DT46 as
+        destination address.</t>
+
+        <t/>
+      </section>
+
+      <section title="MTU">
+        <t/>
+
+        <t>Each BFIR is expected to know the Maximum Transmission Unit (MTU)
+        of the BIER domain. This may be known by provisioning, or by method
+        specified in [draft-ietf-bier-mtud]. The section 3 of [RFC8296]
+        applies.</t>
+
+        <t/>
+      </section>
+
+      <section title="TTL ">
+        <t/>
+
+        <t>The ingress PE (BFIR) should not copy the Time to Live (TTL) field
+        from the payload IP header received from a CE router to the delivery
+        IP header. Setting the TTL of the delivery IP header is determined by
+        the local policy of the ingress PE (BFIR) router per section 3 of
+        [RFC8296].</t>
+
+        <t/>
+      </section>
+    </section>
+
+    <section title="Security Considerations">
+      <t>The security considerations SEC-1, SEC-2, SEC-3 defined in <xref
+      target="I-D.ietf-spring-srv6-network-programming"/> apply equally to
+      this document.</t>
+
+      <t/>
+    </section>
+
+    <section title="IANA Considerations">
+      <t>Allocation is expected from IANA for the following Src.DTx functions
+      codepoints from the "SRv6 Endpoint Behaviors" sub-registry.</t>
+
+      <t>Values 68, 69, 70 is suggested for Src.DT6, Src.DT4, Src.DT46
+      respectively.</t>
+
+      <t><figure align="left">
+          <artwork><![CDATA[   +-------+--------+--------------------------+------------+
+   | Value |  Hex   |    Endpoint function     | Reference  |
+   +-------+--------+--------------------------+------------+
+   | TBD   |  TBD   |    Src.DT6               | This draft |
+   +-------+--------+--------------------------+------------+ 
+   | TBD   |  TBD   |    Src.DT4               | This draft |
+   +-------+--------+--------------------------+------------+
+   | TBD   |  TBD   |    Src.DT46              | This draft |
+   +-------+--------+--------------------------+------------+
+ 
+  Src.DT6   Source address indicating decapsulation and IPv6 table lookup
+            e.g. IPv6-MVPN (equivalent to per-VRF VPN label in RFC8556)
+  Src.DT4   Source address indicating decapsulation and IPv4 table lookup
+            e.g. IPv4-MVPN (equivalent to per-VRF VPN label in RFC8556)
+  Src.DT46  Source address indicating decapsulation and IP table lookup
+            e.g. IP-MVPN (equivalent to per-VRF VPN label) 
+   ]]></artwork>
+        </figure></t>
+    </section>
+
+    <section title="Acknowledgements">
+      <t>TBD.</t>
+
+      <t/>
+    </section>
+  </middle>
+
+  <back>
+    <references title="Normative References">
+      <?rfc include='reference.RFC.8279'?>
+
+      <?rfc include='reference.RFC.8296'?>
+
+      <?rfc include='reference.RFC.6515'?>
+
+      <?rfc include='reference.RFC.6625'?>
+
+      <?rfc include='reference.RFC.7716'?>
+
+      <?rfc include='reference.RFC.8556'?>
+
+      <?rfc include='reference.I-D.ietf-bess-srv6-services'?>
+
+      <?rfc include='reference.I-D.ietf-spring-srv6-network-programming'?>
+
+      <?rfc include='reference.I-D.xie-bier-ipv6-encapsulation'?>
+    </references>
+
+    <references title="Informative References">
+      <?rfc include='reference.RFC.2119'?>
+
+      <?rfc include='reference.RFC.8174'?>
+    </references>
+  </back>
+</rfc>

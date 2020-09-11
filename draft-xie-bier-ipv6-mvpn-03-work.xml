@@ -10,7 +10,7 @@
 <?rfc inline="yes"?>
 <?rfc compact="yes"?>
 <?rfc subcompact="no"?>
-<rfc category="std" docName="draft-xie-bier-ipv6-mvpn-02" ipr="trust200902">
+<rfc category="std" docName="draft-xie-bier-ipv6-mvpn-03" ipr="trust200902">
   <front>
     <title abbrev="BIERv6 MVPN">Use of BIER IPv6 Encapsulation (BIERv6) for
     Multicast VPN in IPv6 networks</title>
@@ -87,7 +87,14 @@
       </address>
     </author>
 
-    <date day="14" month="January" year="2020"/>
+    <author fullname="Gyan Mishra" initials="G. " surname="Mishra">
+      <organization>Verizon Inc.</organization>
+      <address>
+        <email>gyan.s.mishra@verizon.com</email>
+      </address>
+    </author>
+
+    <date day="10" month="September" year="2020"/>
 
     <abstract>
       <t>This draft defines the procedures and messages for using Bit Index
@@ -131,12 +138,12 @@
 
       <t>In particular, MVPN deployment in IPv6 networks relies on L3VPN
       deployment on IPv6 networks firstly, thus the c-multicast routing
-      procedure like UMH Selection can be done. As an example, the L3VPN 
+      procedure like Upstream Multicast Hop (UMH) Selection can be done. As an example, the L3VPN 
       deployment in SRv6 networks can be referred to <xref
       target="I-D.ietf-bess-srv6-services"/>.</t>
 
-      <t>GTM defined in [RFC7716] is also covered in this document, as GTM
-      shares the same BGP-MVPN signaling, while providing an approach of
+      <t>Global Table Multicast (GTM) defined in <xref target="RFC7716"/> is also covered in this document, as GTM
+      shares the same BGP-MVPN signalling, while providing an approach of
       Non-VPN multicast over a service provider core with various P-tunnel
       type. For the same reason of UMH selection as a base of GTM, the Global
       IPv4/IPv6 over SRv6 networks can be referred to <xref
@@ -223,21 +230,20 @@
       target="RFC6515"/>. These are listed below.</t>
 
       <t><list style="symbols">
-          <t>"Originating Router's IP Address" in the NLRI of Type 1 or Type 3
+          <t>"Originating Router's IP Address" in the NLRI of Type 1, 3 or 4 
           BGP-MVPN route is an IPv6 address.</t>
 
           <t>"Network Address of Next Hop" field in the MP_REACH_NLRI
           attribute is an IPv6 address.</t>
 
           <t>Route Targets Extended Community (EC) used in C-multicast join
-          (Type 6 or 7) route or Leaf A-D (Type 5) route is an IPv6 Address
+          (Type 6 or 7) route or Leaf A-D (Type 4) route is an IPv6 Address
           Specific Extended Community, where the Global Administrator field
           will be an IPv6 address identifies the Upstream PE or the UMH.</t>
 
-          <t>"VRF Route Import Extended Community (EC)" carried by unicast
-          VPN-IPv4 or VPN-IPv6 routes as [RFC6515] specifies, or SAFI 1, 2, or
-          4 unicast routes, or MVPN (SAFI 5) Source-Active routes as [RFC7716]
-          specifies.</t>
+          <t>"VRF Route Import Extended Community (EC)" carried by 
+          VPNv4 or VPNv6 routes (SAFI 128) or multicast routes (SAFI 2 or 129) 
+          is an IPv6 Address Specific Extended Community. </t>
         </list></t>
 
       <t/>
@@ -321,7 +327,7 @@
     <section title="GTM over BIERv6 Core">
       <t/>
 
-      <t>As specified in [RFC7716], Global Table Multicast (GTM) uses the same
+      <t>As specified in <xref target="RFC7716"/>, Global Table Multicast (GTM) uses the same
       Subsequent Address Family Identifier (SAFI) value, the same Network
       Layer Reachability Information (NLRI) format, and the same procedures of
       MVPN with only a few adaptions. It support for both IPv4 and IPv6
@@ -341,7 +347,7 @@
       <t><list style="symbols">
           <t>Route Distinguishers - the RD field of a BGP-MVPN route's NLRI
           MUST be set to zero (i.e., to 64 bits of zero) to represent a
-          Non-VPN GTM. See section 2.2 of [RFC7716].</t>
+          Non-VPN GTM. See section 2.2 of <xref target="RFC7716"/>.</t>
 
           <t>Route Targets Extended Community (EC) - The RT EC carried by the
           BGP-MVPN C-multicast (Type 6 or 7) route or Leaf A-D (Type 4) route
@@ -350,10 +356,9 @@
           Local Administrator field MUST always be set to zero in GTM
           case.</t>
 
-          <t>VRF Route Import Extended Community (EC) - The VRF Route Import
-          EC used in BIERv6 core MUST be an IPv6-address-specific EC if used,
-          either used in UMH-eligible unicast routes having a SAFI of 1, 2, or
-          4, or used in the MVPN (SAFI of 5) Source Active A-D route.</t>
+          <t>VRF Route Import Extended Community (EC) - The VRF Route Import 
+          EC carried by IPv4 or IPv6 routes (SAFI 1 or 4) or multicast routes (SAFI 2) 
+          is an IPv6 Address Specific Extended Community. </t>
         </list></t>
 
       <t>GTM IPv4 multicast over an BIERv6 core may be considered an
@@ -394,14 +399,6 @@ CE1-----------PE1------------------P2------------------PE2-----------CE2
       ]]></artwork>
           </figure></t>
 
-        <t>In case of inter-AS scenario, BIERv6 packets may travel through
-        unicast to a Boarder Router (BR), and then replicate in a single
-        intra-AS BIERv6 domain. How such non-segmented BIERv6 scenario can be
-        supported is outside the scope of this document.</t>
-
-        <t>How segmented MVPN, for example, between BIERv6 and BIERv6, or
-        between BIERv6 and Ingress Replication(IR) in Non-MPLS IPv6 networks,
-        is outside the scope of this document.</t>
 
         <t>The Src.DTx SHOULD support as destination address of an ICMPv6
         packet. If a loopback address of the BFR is used as Src.DTx address, 
@@ -428,8 +425,9 @@ CE1-----------PE1------------------P2------------------PE2-----------CE2
         <t/>
 
         <t>Each BFIR is expected to know the Maximum Transmission Unit (MTU)
-        of the BIER domain. This may be known by provisioning, or by method
-        specified in [draft-ietf-bier-mtud]. The section 3 of [RFC8296]
+        of the BIER domain and the size of the BIERv6 encapsulation, thus 
+        each BFIR can deduce the maximum size of the payload that can be 
+        encapsulated in a BIERv6 packet. The section 3 of <xref target="RFC8296"/>
         applies.</t>
 
         <t/>
@@ -442,15 +440,15 @@ CE1-----------PE1------------------P2------------------PE2-----------CE2
         from the payload IP header received from a CE router to the delivery
         IP header. Setting the TTL of the delivery IP header is determined by
         the local policy of the ingress PE (BFIR) router per section 3 of
-        [RFC8296].</t>
+        <xref target="RFC8296"/>.</t>
 
         <t/>
       </section>
     </section>
 
     <section title="Security Considerations">
-      <t>The security considerations SEC-1, SEC-2, SEC-3 defined in <xref
-      target="I-D.ietf-spring-srv6-network-programming"/> apply equally to
+      <t>The security considerations defined in <xref target="RFC8556"/> and 
+      <xref target="I-D.xie-bier-ipv6-encapsulation"/> apply equally to
       this document.</t>
 
       <t/>
@@ -474,11 +472,11 @@ CE1-----------PE1------------------P2------------------PE2-----------CE2
    | TBD   |  TBD   |    Src.DT46              | This draft |
    +-------+--------+--------------------------+------------+
  
-  Src.DT6   Source address indicating decapsulation and IPv6 table lookup
+  Src.DT6   Source address for decapsulation and IPv6 table lookup
             e.g. IPv6-MVPN (equivalent to per-VRF VPN label in RFC8556)
-  Src.DT4   Source address indicating decapsulation and IPv4 table lookup
+  Src.DT4   Source address for decapsulation and IPv4 table lookup
             e.g. IPv4-MVPN (equivalent to per-VRF VPN label in RFC8556)
-  Src.DT46  Source address indicating decapsulation and IP table lookup
+  Src.DT46  Source address for decapsulation and IP table lookup
             e.g. IP-MVPN (equivalent to per-VRF VPN label) 
    ]]></artwork>
         </figure></t>

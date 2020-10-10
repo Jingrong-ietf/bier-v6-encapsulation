@@ -94,7 +94,7 @@
       </address>
     </author>
 
-    <date day="10" month="September" year="2020"/>
+    <date day="10" month="October" year="2020"/>
 
     <abstract>
       <t>This draft defines the procedures and messages for using Bit Index
@@ -242,7 +242,7 @@
           will be an IPv6 address identifies the Upstream PE or the UMH.</t>
 
           <t>"VRF Route Import Extended Community (EC)" carried by 
-          VPNv4 or VPNv6 routes (SAFI 128) or multicast routes (SAFI 2 or 129) 
+          VPNv4 or VPNv6 unicast routes (SAFI 128) or multicast routes (SAFI 129) 
           is an IPv6 Address Specific Extended Community. </t>
         </list></t>
 
@@ -483,7 +483,7 @@ CE1-----------PE1------------------P2------------------PE2-----------CE2
     </section>
 
     <section title="Acknowledgements">
-      <t>TBD.</t>
+      <t>The authors would like to thank Jeffrey Zhang for his useful comments.</t>
 
       <t/>
     </section>
